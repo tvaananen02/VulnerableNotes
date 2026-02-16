@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Home - VulnerableNotes{% endblock %}
+
+{% block content %}
+<div class="text-center py-20">
+    <h1 class="text-5xl font-bold mb-4">Welcome to VulnerableNotes</h1>
+    <p class="text-xl text-gray-400 mb-8">Demo application with intentional security flaws</p>
+    
+    {% if user %}
+        <div class="bg-gray-800 rounded-lg p-6 max-w-md mx-auto mb-8">
+            <p class="text-lg mb-4">Logged in as <span class="text-blue-400 font-semibold">{{ user.username }}</span></p>
+        </div>
+    {% else %}
+        <p class="text-xl text-gray-400 mb-8">Read the readme.md to find info about test users and the flaws</p>
+    {% endif %}
+</div>
+{% endblock %}

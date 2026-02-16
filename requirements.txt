@@ -1,0 +1,7 @@
+fastapi  
+uvicorn[standard]  # ASGI server for FastAPI
+jinja2
+python-multipart
+aiosqlite
+itsdangerous
+bcrypt

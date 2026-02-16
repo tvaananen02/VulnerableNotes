@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - VulnerableNotes{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-between items-center mb-8">
+    <h2 class="text-2xl font-bold">Welcome, {{ user.username }}</h2>
+    <a href="/create-note" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition duration-200">Create Note</a>
+</div>
+
+{% if notes %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for note in notes %}
+        <div class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 shadow-lg">
+            <h3 class="text-xl font-bold mb-2">{{ note.title }}</h3>
+            <p class="text-gray-400 text-sm mb-4">{{ note.content[:100] }}</p>
+            
+            {% if note.is_private %}
+                <span class="bg-red-500 text-white text-xs px-3 py-1 rounded-full inline-block mt-2">Private</span>
+            {% else %}
+                <span class="bg-green-500 text-white text-xs px-3 py-1 rounded-full inline-block mt-2">Public</span>
+            {% endif %}
+            
+            <a href="/note/{{ note.id }}" class="block mt-4 text-blue-400 hover:text-blue-300">View Note</a>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-center text-gray-400 text-lg mt-12">No notes yet.</p>
+{% endif %}
+
+{% endblock %}
