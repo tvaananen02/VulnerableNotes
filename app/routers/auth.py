@@ -18,14 +18,12 @@ async def register(
     email: str = Form(...),
     password: str = Form(...)
 ):
-    """Register new user"""
+    # FLAW 1 (A07): No password strength requirements
     username = username.strip()
     email = email.strip()
     password = password.strip()
     
-    # FLAW 3 (A07): No password strength requirements
-    
-    # FIX for FLAW 3 (commented out):
+    # #FIX for FLAW 1: Validate the password using the password_checker's validate_password_strength method
     # is_valid, error_message = password_checker.validate_password_strength(password)
     # if not is_valid:
     #     return templates.TemplateResponse("register.html", {
@@ -34,14 +32,12 @@ async def register(
     #         "username": username,
     #         "email": email
     #     })
-    
-    # FLAW 1 (A04): Storing password in plain text
+    # FLAW 2 (A04): Storing password in plain text
     await database.execute_query(
         "INSERT INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)",
         (username, email, password, 0)
     )
-    
-    # FIX for FLAW 1 (commented out):
+    # #FIX for FLAW 2: Uses the bcrypt package to hash and salt the password
     # hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     # await database.execute_query(
     #     "INSERT INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)",
@@ -58,11 +54,11 @@ async def login(
     username = username.strip()
     password = password.strip()
 
-    # FLAW 2 (A05): SQL Injection - building query with f-string
+    # FLAW 3 (A05): SQL Injection - building query with f-string
     query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
     user = await database.fetch_one(query, ())
     
-    # FIX for FLAW 2 (commented out):
+    # #FIX for FLAW 3: Uses parameterized query to prevent SQL injection and validates the password (MAKE SURE TO HAVE FLAW 1 FIXED FOR THIS)
     # user = await database.fetch_one(
     #     "SELECT * FROM users WHERE username = ?",
     #     (username,)

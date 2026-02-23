@@ -46,7 +46,7 @@ sudo apt install python3 python3-pip python3-venv
 ```
 2. Clone or download the repository and cd into the root directory
 ```bash
-git clone {repo_url}
+git clone https://github.com/tvaananen02/VulnerableNotes.git
 cd VulnerableNotes
 ```
 3. Create the virtual environment:
@@ -88,7 +88,7 @@ Or download from: https://www.python.org/downloads/
 
 2. **Clone or download the repository:**
 ```bash
-git clone 
+git clone https://github.com/tvaananen02/VulnerableNotes.git
 cd VulnerableNotes
 ```
 
@@ -130,7 +130,7 @@ python --version
 
 3. **Clone or download the repository:**
 ```cmd
-git clone <your-repo-url>
+git clone https://github.com/tvaananen02/VulnerableNotes.git
 cd VulnerableNotes
 ```
 
@@ -177,12 +177,41 @@ http://localhost:8000
 
 Simply, press CTRL+C in the terminal where the app is running
 
+## Troubleshooting
+
+### Port already in use
+Simply use a different port e.g.
+
+```bash
+uvicorn app.main:app --reload --port 8001
+```
+
+### Database Issues
+Stop the app if it is running and then run 
+```bash
+rm vulnerablenotes.db
+uvicorn app.main:app --reload
+```
+
+### Import Errors
+Try reinstalling the dependencies
+```bash
+pip install -r requirements.txt
+```
+### Virtual Environment Not Activated
+```bash
+# Linux/macOS
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+```
 
 ## Features
 - User registration and authentication
 - Create, view, and delete notes
 - File attachments for notes
-- Private/public note visibility
+- Private/public note visibility (this is for demoing the exploits only)
 - Test users pre-loaded with demo data
 ### Test users
 The application comes with three pre-configured test accounts:
@@ -195,17 +224,153 @@ The application comes with three pre-configured test accounts:
 
 You can try to login as any of them and view the content.
 
+⚠️ **Important: Test Data Maintenance**
+
+When you delete a note from the test users, the associated file is **permanently removed** from `app/static/uploads/`. 
+
+**To restore demo files:**
+1. Note the filename before deletion
+2. Delete the database: `rm vulnerablenotes.db`
+3. Recreate the demo file in `app/static/uploads/`(add any content you want to demo)
+4. Restart the server to reinitialize test data
 ---
 ## Security Flaws Implemented
 
 This application intentionally contains the following OWASP Top 10 vulnerabilities (https://owasp.org/Top10/2025/):
 
-1. **A01: Broken Access Control** - Users can view and delete other users' notes
-2. **A04: Cryptographic Failures** - Passwords stored in plain text
-3. **A05: Injection** - SQL injection vulnerability in login
-4. **A07: Authentication Failures** - Weak session management
-5. **A08: Software and Data Integrity Failures** - No file upload validation
+1. **A07 - Authentication Failures** (Weak Password Requirements)
 
-All flaws include commented fixes in the source code.
+    **Explointing the fault**
+    1. Go to the registration page
+    2. Register a user with a password ```'a'```
+    3. **Result:** Account created successfully
+
+    **Fix**: Uncomment the password validation at lines 26-34 in [auth.py](app/routers/auth.py#L26)
+
+    **Screenshots**
+
+    Before:
+
+    ![before_1](screenshots/flaw-1-before-1.png)
+
+    ![before_2](screenshots/flaw-1-before-2.png)
+
+    ![before_3](screenshots/flaw-1-before-3.png)
+
+    After:
+
+    ![after_1](screenshots/flaw-1-after-1.png)
+
+    ![after_2](screenshots/flaw-1-after-2.png)
+
+    ![after_3](screenshots/flaw-1-after-3.png)    
+
+2. **A04 - Cryptographic Failures** (Plain text passwords)
+
+    **Explointing the fault**
+    1. Register any new user with any password
+    2. Open a terminal and query the database from the project's root
+        ```bash
+        sqlite3 vulnerablenotes.db "SELECT username, password FROM users;"
+        ```
+    3. **Result**: All passwords are visible in plain text
+    **Fix:** 
+    1. Comment out lines 63-67 in [database.py](app/database.py#L63) and lines 37-40 in [auth.py](app/routers/auth.py#L37)
+    2. Uncomment lines 68-74 in [database.py](app/database.py#L68) lines 41-46 in [auth.py](app/routers/auth.py#L41)
+    3. Remove the database file with `rm vulnerablenotes.db`
+    4. Start the app again
+    
+    **Screenshots**
+
+    Before:
+    
+    ![flaw_2_before](screenshots/flaw-2-before.png)
+
+    After:
+
+    ![flaw_2_after](screenshots/flaw-2-after.png)
+
+3. **A05 - Injection** (SQL Injection)
+ 
+    **Explointing the fault**
+    1. Go to the login page
+    2. Write in the username as `admin '--`
+    3. In the password field write anything
+    4. **Result**: Logged in as an admin
+
+    **Why this works** The `--` part of the username starts an SQL comment and bypasses the password check completely
+
+    **Fix:** 
+    1. Comment out lines 58-59 in [auth.py](app/routers/auth.py#L58)
+    2. Uncomment lines 61-68 in [auth.py](app/routers/auth.py#L61)
+    3. Try the exploit again
+
+    **Screenshots**:
+    Before:
+
+    ![sql_injection_before-1](screenshots/flaw-3-before-1.png)    
+    
+    ![sql_injection_before-2](screenshots/flaw-3-before-2.png)
+
+    After(this is the result after trying with the same credentials as in the exploit): 
+
+    ![sql_injection_after](screenshots/flaw-3-after.png)    
+
+
+
+4. **A08 - Software/Data Integrity Failures** (No File Upload Validation)
+ 
+    **Explointing the fault**
+    1. Login as any user you like
+    2. On your computer, create a .php or .sh file for example and add any content you like.
+    3. Create a new note, give it a title, some content and upload the file you created
+    4. **Result:** the file is uploaded and it is downloadable.
+
+    **Fix:**: Uncomment lines 58-65 in [notes.py](app/routers/notes.py#L58)
+    1. Try to exploit again. You should get an error message which states that the filetype is not allowed
+    2. Then you can try to create a .md file in your computer and upload it to a new note. This should also work because of the validation.
+
+    **Screenshots**
+
+    Before:
+
+    ![flaw4_before-1](screenshots/flaw-4-before-1.png)
+    
+    ![flaw4_before-2](screenshots/flaw-4-before-2.png)
+
+    After:
+
+    ![flaw4_after-1](screenshots/flaw-4-after-1.png)
+
+    ![flaw4_after-2](screenshots/flaw-4-after-2.png)
+    
+    ![flaw4_after-3](screenshots/flaw-4-after-3.png)
+
+
+
+
+
+5. **A01 - Broken Access Control** (Unauthorized Note Access)
+ 
+    **Explointing the fault**
+    1. Login as John
+    2. View your notes, make sure you get the id:s of the notes(the last note of John should be at `note/3` on a fresh database with no additional notes)
+    3. With this in mind try to access the route `note/4/`.
+    4. **Result** Alice's private note can be viewed by John.
+
+    **Fix:**: 
+    1. Comment out lines 95-99 in [notes.py](app/routers/notes.py#L95)
+    2. Uncomment lines 100-104 in [notes.py](app/routers/notes.py#100)
+    3. Try the exploit again. Your browser should raise an error.
+    **Screenshots**
+
+    Before:
+    
+    ![flaw_5_before_1](screenshots/flaw-5-before-1.png)
+
+    ![flaw_5_before_2](screenshots/flaw-5-before-2.png)
+
+    After:
+    ![flaw_5_after](screenshots/flaw-5-after.png)
 
 ---
