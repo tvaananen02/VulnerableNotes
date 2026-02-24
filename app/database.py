@@ -9,7 +9,6 @@ async def get_db():
     
 async def init_db():
     async with aiosqlite.connect(DATABASE_URL) as db:
-        # Users table 
         await db.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +19,6 @@ async def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """)
-        # Notes table 
         await db.execute("""
         CREATE TABLE IF NOT EXISTS notes(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +31,6 @@ async def init_db():
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
         """)
-        # Files table
         await db.execute("""
         CREATE TABLE IF NOT EXISTS files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +42,6 @@ async def init_db():
         );        
         """)
         await db.commit()
-        # Create test users
         await create_test_users(db)
 
 async def create_test_users(db):
@@ -73,7 +69,6 @@ async def create_test_users(db):
     #         (username, email, hashed.decode('utf-8'), is_admin)
     #     )
 
-    # Demo notes for the test users   
     demo_notes = [
         (1, "John's Secret", "I sure hope my secret file wont get leaked anywhere!", 1),
         (1, "John's public note", "We should use sense in what we write and upload here...just in case.", 0),        
@@ -86,9 +81,7 @@ async def create_test_users(db):
             "INSERT INTO notes (user_id, title, content, is_private) VALUES (?, ?, ?, ?)",
             (user_id, title, content, is_private)
         )
-    # Ensure uploads directory exists
     os.makedirs("app/static/uploads", exist_ok=True)
-    # Demo files from static/uploads
     demo_files = [
         (1, "johns_secret.txt", "app/static/uploads/johns_secret.txt"),
         (3, "janes_secret.txt", "app/static/uploads/janes_secre.txt"),

@@ -1,4 +1,3 @@
-# The shared dependencies across routers
 from fastapi import Request
 from datetime import datetime
 from . import database

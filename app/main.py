@@ -7,11 +7,8 @@ from .routers import pages, auth, notes
 from . import database
 
 app = FastAPI(title=APP_TITLE)
-#mount the static directory for file uploads
 app.mount("/static", StaticFiles(directory="app/static"))
-#middleware
 app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
-#routers
 app.include_router(pages.router, tags=["pages"])
 app.include_router(auth.router, tags=["auth"])
 app.include_router(notes.router, tags=["notes"])
