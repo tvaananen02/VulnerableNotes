@@ -354,11 +354,11 @@ This application intentionally contains the following OWASP Top 10 vulnerabiliti
  
     **Explointing the fault**
     1. Login as John
-    2. View your notes, make sure you get the id:s of the notes(the last note of John should be at `note/3` on a fresh database with no additional notes)
-    3. With this in mind try to access the route `note/4/`.
+    2. View your notes, make sure you get the id:s of the notes(the last note of John should be at `note/2` on a fresh database with no additional notes)
+    3. With this in mind try to access the route `note/3`.
     4. **Result** Alice's private note can be viewed by John.
 
-    **Fix:**: 
+    **Fix:**
     1. Comment out lines 95-99 in [notes.py](app/routers/notes.py#L95)
     2. Uncomment lines 100-104 in [notes.py](app/routers/notes.py#100)
     3. Try the exploit again. Your browser should raise an error.
