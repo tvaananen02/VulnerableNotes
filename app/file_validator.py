@@ -1,6 +1,5 @@
 import os
-ALLOWED_FILE_EXTENSIONS = {'.txt', '.pdf', '.png', '.jpg', '.md'}
-MAX_FILE_SIZE = 5*1024*1024
+from .config import MAX_FILE_SIZE, ALLOWED_FILE_EXTENSIONS
 
 def validate_file(filename: str, file_content: bytes) -> tuple[bool, str]:
     file_ext = os.path.splitext(filename)[1].lower()

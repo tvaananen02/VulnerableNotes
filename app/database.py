@@ -1,7 +1,7 @@
 import aiosqlite
 import os
 import bcrypt
-DATABASE_URL = "vulnerablenotes.db"
+from .config import DATABASE_URL
 async def get_db():
     db = await aiosqlite.connect(DATABASE_URL)
     db.row_factory = aiosqlite.Row
